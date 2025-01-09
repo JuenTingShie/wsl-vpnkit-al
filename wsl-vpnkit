@@ -41,10 +41,25 @@ fi
 # replace calls to iptables if iptables-legacy exists
 command -v iptables-legacy >/dev/null && alias iptables=iptables-legacy
 
+# Choose random free SSH port for GVPROXY by default
+get_random_port() {
+    # starting from BASE_PORT with INCREMENT step
+    BASE_PORT=2222 # the default SSH port chosen if free
+    INCREMENT=1
+
+    port=$BASE_PORT
+
+    while [ -n "$(ss -tan4H "sport = $port")" ]; do
+    port=$((port+INCREMENT))
+    done
+
+    echo "$port"
+}
+
 run () {
     echo "starting vm and gvproxy..."
     $VMEXEC_PATH \
-        -url="stdio:$GVPROXY_PATH?listen-stdio=accept&debug=$DEBUG" \
+        -url="stdio:$GVPROXY_PATH?listen-stdio=accept&ssh-port=$(get_random_port)&debug=$DEBUG" \
         -iface="$TAP_NAME" \
         -stop-if-exist="" \
         -preexisting=1 \
