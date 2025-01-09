@@ -58,8 +58,10 @@ get_random_port() {
 
 run () {
     echo "starting vm and gvproxy..."
+    PORT=$(get_random_port)
+    echo "using port: $PORT"
     $VMEXEC_PATH \
-        -url="stdio:$GVPROXY_PATH?listen-stdio=accept&ssh-port=$(get_random_port)&debug=$DEBUG" \
+        -url="stdio:$GVPROXY_PATH?listen-stdio=accept&ssh-port=$PORT&debug=$DEBUG" \
         -iface="$TAP_NAME" \
         -stop-if-exist="" \
         -preexisting=1 \
