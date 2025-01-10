@@ -43,14 +43,19 @@ command -v iptables-legacy >/dev/null && alias iptables=iptables-legacy
 
 # Choose random free SSH port for GVPROXY by default
 get_random_port() {
-    # starting from BASE_PORT with INCREMENT step
-    BASE_PORT=2222 # the default SSH port chosen if free
-    INCREMENT=1
+    # Define the range
+    min=49152
+    max=65535
 
-    port=$BASE_PORT
+    # 循環生成直到找到未占用的端口
+    while true; do
+        # 隨機生成一個端口
+        port=$(shuf -i $min-$max -n 1)
 
-    while [ -n "$(ss -tan4H "sport = $port")" ]; do
-    port=$((port+INCREMENT))
+        # 檢查該端口是否未被占用 (僅監聽中的端口)
+        if ! ss -tan4H | grep -qE "LISTEN.*:$port\b"; then
+            break
+        fi
     done
 
     echo "$port"
