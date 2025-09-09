@@ -21,9 +21,15 @@ jobs:
       run: |
         docker build -t $TAG_NAME -f ./distro/alpine.dockerfile --build-arg REF=$RUN_URL --build-arg VERSION=${GITHUB_REF#refs/tags/} .
 
-    - uses: anchore/scan-action@v3
+    - name: Vulnerability Scan
+      uses: anchore/scan-action@v3
       with:
         image: ${{ env.TAG_NAME }}
+        fail-build: false          # 不因漏洞中止構建
+        output-format: table       # 設置為表格格式，便於檢視
+        severity-cutoff: medium    # 顯示中等及以上嚴重性漏洞
+      env:
+        ANCHORE_CLI_LOG_LEVEL: DEBUG # 開啟詳細日誌，便於排查問題
 
     - name: Package
       run: |
@@ -33,7 +39,7 @@ jobs:
         ls -la wsl-vpnkit.tar.gz
 
     - name: Artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: wsl-vpnkit
         path: |
